@@ -10,7 +10,6 @@ import javax.crypto.spec.SecretKeySpec
 object Cryptography {
     fun decrypt(fileName: String, keyBase64: String, action: (String) -> Unit ) {
         val encryptedFile: File = File(fileName)
-        val decryptedFile = File(fileName.replace(".enc", ".ps1"))
         try {
             val keyBytes = Base64.getDecoder().decode(keyBase64)
             val key: SecretKey = SecretKeySpec(keyBytes, "AES")
@@ -21,10 +20,11 @@ object Cryptography {
             val cipher = Cipher.getInstance("AES/GCM/NoPadding")
             cipher.init(Cipher.DECRYPT_MODE, key, gcmParameterSpec)
             val decryptedBytes = cipher.doFinal(encryptedBytes)
-//            decryptedFile.writeBytes(decryptedBytes)
-            println("code PowerShell: ${decryptedBytes.toString(Charsets.UTF_8)}")
-            println("\nSuccessfully decrypted '${encryptedFile.name}' to '${decryptedFile.name}'!")
-            val scriptBase64 = Base64.getEncoder().encodeToString(decryptedBytes)
+            println("code PowerShell (UTF-8): ${decryptedBytes.toString(Charsets.UTF_8)}")
+            println("\nSuccessfully decrypted '${encryptedFile.name}'!")
+            val scriptText = decryptedBytes.toString(Charsets.UTF_8)
+            val powershellBytes = scriptText.toByteArray(Charsets.UTF_16LE)
+            val scriptBase64 = Base64.getEncoder().encodeToString(powershellBytes)
             action(scriptBase64)
         }
         catch (e: IllegalArgumentException){ println("Error 01 : ${e.message}") }
