@@ -1,0 +1,66 @@
+# Workflow name (will appear on GitHub)
+name: Build Windows Executable
+
+# Define WHEN this should run
+on:
+  # Option 1: Run on every push to the 'main' branch
+  push:
+    branches: [ main ]
+
+  # Option 2: Allow manual execution (GREAT for testing)
+  workflow_dispatch:
+
+# Define the JOBS
+jobs:
+  build-windows:
+    # 1. Tell GitHub to use a Windows VM
+    runs-on: windows-latest
+
+    steps:
+      # 2. Download your source code to the Windows machine
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # 3. Set up Java and GraalVM
+      #    (Using JDK 21 as an example)
+      - name: Set up GraalVM (JDK 21)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'graalvm'
+          java-version: '21'
+
+      # 4. Build the "Fat JAR" (using Gradle)
+      #    'run' executes a command in the Windows terminal (PowerShell)
+      - name: Build Fat JAR with Gradle
+        run: ./gradlew shadowJar
+        # If you use Maven, change this line to: run: mvn package
+
+      # 5. Generate the .exe with Native Image
+      #    !!! THIS IS THE MOST IMPORTANT STEP FOR YOU TO EDIT !!!
+      - name: Generate .exe with GraalVM
+        run: |
+          native-image -jar build/libs/PSUnwrapper-1.0-all.jar meu-executavel
+        # -----------------------------------------------------------------
+        # CHANGE THE TWO THINGS ABOVE:
+        # 1. 'build/libs/test_executable...' -> Put the EXACT path to the .jar that Step 4 created.
+        # 2. 'meu-executavel'                -> Choose the name your final .exe will have.
+        # -----------------------------------------------------------------
+
+      # 6. (NEW) Run the executable
+      #    This executes the .exe you just built.
+      #    It assumes 'setup.enc' is in the root, which it is.
+      - name: Run the built executable
+        run: .\meu-executavel.exe
+
+      # 7. (MODIFIED) Publish the .exe AND setup.enc for you to download
+      - name: Upload executable and setup file
+        uses: actions/upload-artifact@v4
+        with:
+          # The name of the .zip file you will download
+          name: windows-executable-with-setup
+
+          # The files to put inside the .zip
+          path: |
+            meu-executavel.exe
+            setup.enc
+          # <-- Make sure 'meu-executavel.exe' is the SAME name from Step 5
