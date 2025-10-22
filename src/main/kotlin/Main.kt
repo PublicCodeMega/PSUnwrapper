@@ -2,7 +2,7 @@ package c.PSUnwrapper
 
 import c.PSUnwrapper.cryptography.Cryptography
 
-const val KEY_BASE64 = "5YCUzoIHYzuyZLlo9mChp7fXaymWtN8MW1acUC5flvY="
+const val KEY_BASE64 = "0Rq/+HRHPoyPqk2hs5lujKKk3RxiTgtbhDVAzrrUOkE="
 //TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
 // click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
 fun main() {
